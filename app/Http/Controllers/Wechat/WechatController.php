@@ -8,6 +8,7 @@
  */
 
 namespace App\Http\Controllers\Wechat;
+
 use App\Http\Controllers\Controller;
 use App\DataServer\Front\UserApi;
 use EasyWeChat\Foundation\Application;
@@ -20,9 +21,10 @@ class WechatController extends Controller
      * 微信服务
      * @return mixed
      */
-    function serve(){
+    public function serve()
+    {
         $wechat = app('wechat');
-        $wechat->server->setMessageHandler(function($message){
+        $wechat->server->setMessageHandler(function ($message) {
             return "欢迎关注 Sunallies！";
         });
         return $wechat->server->serve();
@@ -34,7 +36,8 @@ class WechatController extends Controller
      * @param Request $request
      * @return JsonResponse|\Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    function login(Request $request){
+    public function login(Request $request)
+    {
         //微信授权信息
         $user = session('wechat.oauth_user');
         //处理回调地址
@@ -44,27 +47,32 @@ class WechatController extends Controller
         $openId = $user->id;
         //尝试后台openid登陆
         $userApi = new UserApi();
-        try{
+        try {
             $loginRel = $userApi->DoLogin(['openId'=>$openId]);
             //如果登陆成功，跳转前端首页，在跳转链接中附带token和openId;如果不能登陆，则跳转前端首页，在跳转链接中附带openId
-            if($loginRel['code'] == 200){
+            if ($loginRel['code'] == 200) {
                 $result = $loginRel['result'];
                 $redirectUrl = $login_success_urlback.'?'.'openId='.$openId .'&'.'token='.$result['token'];
-            }else{
+            } else {
                 $redirectUrl = $login_failed_urlback.'?'.'openId='.$openId;
             }
-            return redirect($redirectUrl,302);
-        }catch(\Exception $e){
+            return redirect($redirectUrl, 302);
+        } catch (\Exception $e) {
             return new JsonResponse(makeExceptionMsg($e));
         }
     }
 
-    public function wechatJS(Application $wechat,Request $request){
-        $url = $request->get('url',$request->fullUrl());
+    public function wechatJS(Application $wechat, Request $request)
+    {
+        $url = $request->get('url', $request->fullUrl());
         $js =  $wechat->js;
         $js = $js->setUrl($url);
         $data = $js->config(array('onMenuShareQQ', 'onMenuShareWeibo'), true);
         return makeSuccessMsg(json_decode($data));
+    }
 
+    public function justatest()
+    {
+        var_dump('feiteng');
     }
 }
